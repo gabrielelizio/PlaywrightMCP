@@ -138,8 +138,7 @@ export class LoginPage {
   async expectNotOnLoginPage() {
     // Wait for navigation and check if we're no longer on login page
     await this.page.waitForLoadState('networkidle');
-    const currentUrl = this.page.url();
-    expect(currentUrl).not.toContain('/login');
+    await expect(this.page).not.toHaveURL(/\/login$/);
   }
 
   // Accessibility methods

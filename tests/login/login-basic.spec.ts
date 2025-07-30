@@ -22,57 +22,41 @@ test.describe('Basic Login Test', () => {
 
   test('should fill form fields', async ({ page }) => {
     await loginPage.goto();
-    
+    await loginPage.expectFormElementsVisible();
     await loginPage.usernameField.fill('test_user');
     await loginPage.passwordField.fill('test_pass');
-    
     await expect(loginPage.usernameField).toHaveValue('test_user');
     await expect(loginPage.passwordField).toHaveValue('test_pass');
   });
 
   test('should click sign in button', async ({ page }) => {
     await loginPage.goto();
-    
-    // Fill form
+    await loginPage.expectFormElementsVisible();
     await loginPage.usernameField.fill('test_user');
     await loginPage.passwordField.fill('test_pass');
-    
-    // Click sign in
     await loginPage.signInButton.click();
-    
-    // Should either redirect or show error
     await page.waitForLoadState('networkidle');
-    
-    // Check if we're still on login page (which is expected for invalid credentials)
-    const currentUrl = page.url();
-    expect(currentUrl).toContain('/login');
+    await loginPage.expectNoErrorMessages();
+    await expect(page).toHaveURL(/\/products/);
   });
 
   test('should handle invalid credentials gracefully', async ({ page }) => {
     await loginPage.goto();
-    
-    // Fill form with invalid credentials
+    await loginPage.expectFormElementsVisible();
     await loginPage.usernameField.fill('invalid_user');
     await loginPage.passwordField.fill('invalid_pass');
-    
-    // Click sign in
-    await loginPage.signInButton.click();
-    
-    // Should stay on login page
+    await loginPage.passwordField.press('Enter');
     await page.waitForLoadState('networkidle');
-    const currentUrl = page.url();
-    expect(currentUrl).toContain('/login');
+    // Credenciais inválidas devem permanecer na página de login
+    await loginPage.expectStillOnLoginPage();
   });
 
   test('should test form validation', async ({ page }) => {
     await loginPage.goto();
-    
-    // Try to submit empty form
-    await loginPage.signInButton.click();
-    
-    // Should stay on login page
+    await loginPage.expectFormElementsVisible();
+    // Tenta submeter o formulário vazio
+    await loginPage.passwordField.press('Enter');
     await page.waitForLoadState('networkidle');
-    const currentUrl = page.url();
-    expect(currentUrl).toContain('/login');
+    await loginPage.expectStillOnLoginPage();
   });
 }); 
